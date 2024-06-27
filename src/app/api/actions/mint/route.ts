@@ -59,6 +59,10 @@ export const POST = async (req: Request) => {
       });
     }
 
+    const connection = new Connection(
+      process.env.SOLANA_RPC! || clusterApiUrl("devnet"),
+    );
+
     const umi = createUmi(process.env.SOLANA_RPC! || clusterApiUrl("devnet")).use(mplCore());
 
     const tx = create(umi, {
@@ -74,12 +78,14 @@ export const POST = async (req: Request) => {
     // set the end user as the fee payer
     transaction.feePayer = toWeb3JsPublicKey(account);
 
-    transaction.recentBlockhash = (await umi.rpc.getLatestBlockhash()).blockhash;
+    transaction.recentBlockhash = (
+      await connection.getLatestBlockhash()
+    ).blockhash;
 
     const payload: ActionPostResponse = await createPostResponse({
       fields: {
         transaction,
-        message: "Post this memo on-chain",
+        message: "Mint your Blinkle!",
       },
       // no additional signers are required for this transaction
       // signers: [],
