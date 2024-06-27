@@ -59,10 +59,6 @@ export const POST = async (req: Request) => {
       });
     }
 
-    const connection = new Connection(
-      process.env.SOLANA_RPC! || clusterApiUrl("devnet"),
-    );
-
     const umi = createUmi(process.env.SOLANA_RPC! || clusterApiUrl("devnet")).use(mplCore());
 
     const tx = create(umi, {
@@ -71,21 +67,19 @@ export const POST = async (req: Request) => {
       owner: account,
       name: "Test Blinkle",
       uri: "www.example.com",
-    }).build(umi);
+    }).setBlockhash(await umi.rpc.getLatestBlockhash()).setFeePayer(createNoopSigner(account)).build(umi);
 
     let transaction = toWeb3JsLegacyTransaction(tx);
 
     // set the end user as the fee payer
-    transaction.feePayer = toWeb3JsPublicKey(account);
+    // transaction.feePayer = toWeb3JsPublicKey(account);
 
-    transaction.recentBlockhash = (
-      await connection.getLatestBlockhash()
-    ).blockhash;
+    // transaction.recentBlockhash = (await umi.rpc.getLatestBlockhash()).blockhash;
 
     const payload: ActionPostResponse = await createPostResponse({
       fields: {
         transaction,
-        message: "Mint your Blinkle!",
+        message: "Mint your Blinkle",
       },
       // no additional signers are required for this transaction
       // signers: [],
