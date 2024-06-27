@@ -6,7 +6,6 @@ import {
   ActionPostResponse,
   ACTIONS_CORS_HEADERS,
   createPostResponse,
-  MEMO_PROGRAM_ID,
   ActionGetResponse,
   ActionPostRequest,
 } from "@solana/actions";
@@ -20,6 +19,7 @@ import {
 } from "@solana/web3.js";
 import {
   fromWeb3JsPublicKey,
+  toWeb3JsKeypair,
   toWeb3JsLegacyTransaction,
   toWeb3JsPublicKey,
   toWeb3JsTransaction,
@@ -61,8 +61,9 @@ export const POST = async (req: Request) => {
 
     const umi = createUmi(process.env.SOLANA_RPC! || clusterApiUrl("devnet")).use(mplCore());
 
+    const asset = generateSigner(umi);
     const tx = create(umi, {
-      asset: generateSigner(umi),
+      asset,
       payer: createNoopSigner(account),
       owner: account,
       name: "Test Blinkle",
@@ -81,8 +82,7 @@ export const POST = async (req: Request) => {
         transaction,
         message: "Mint your Blinkle",
       },
-      // no additional signers are required for this transaction
-      // signers: [],
+      signers: [toWeb3JsKeypair(asset)],
     });
 
     return Response.json(payload, {
